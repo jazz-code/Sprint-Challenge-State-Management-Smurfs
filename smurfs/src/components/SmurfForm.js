@@ -18,18 +18,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { Form, Field, withFormik } from 'formik';
-import {useDispatch} from "react-redux"
-import axios from 'axios';
+import { connect } from 'react-redux';
+import { postData } from "../actions"
 import * as Yup from 'yup';
 
-const SmurfForm = ({ errors, touched, handleSubmit, status }) => {
-  const [smurfs, setSmurfs] = useState([]);
-  console.log("smurfs", smurfs);
-  const dispatch = useDispatch()
+export const POST_SMURF_DATA_START = "POST_SMURF_DATA_START"
+export const POST_SMURF_DATA_SUCCESS = "POST_SMURF_DATA_SUCCESS"
+
+const SmurfForm = (props) => {
+  const { errors, touched, values, handleSubmit, status, dispatch } = props
+const [smurfs, setSmurfs] = useState([])
+  console.log("smurfs", props.smurfs);
+  // const dispatch = useDispatch()
 
   useEffect(() => {
     if (status) {
-      setSmurfs([...smurfs, status]);
+      props.smurfs([...props.smurfs, status]);
     }
   }, [status]);
 
@@ -53,14 +57,13 @@ const SmurfForm = ({ errors, touched, handleSubmit, status }) => {
         <button type="submit">Submit!</button>
       </Form>
 
-      {smurfs.map(smurf => (
+      {props.smurfs.map(smurf => (
         <p key={smurf.id}>{smurf.name}</p>
       ))}
     </div>
   );
 };
-export const POST_SMURF_DATA_START = "POST_SMURF_DATA_START"
-export const POST_SMURF_DATA_SUCCESS = "POST_SMURF_DATA_SUCCESS"
+
 const FormikSmurfForm = withFormik({
   mapPropsToValues({ name, age, height, }) {
     return {
@@ -76,22 +79,39 @@ const FormikSmurfForm = withFormik({
     height: Yup.string().required("Height required")
   }),
 
-  
-
-  handleSubmit (values, dispatch, { setStatus })  {
-    dispatch({type: POST_SMURF_DATA_START })
-
-    axios
-      .post('http://localhost:3333/smurfs', values)
-      .then(res => {
-          console.log("Post Smurfs", res.data)
-          dispatch({type: POST_SMURF_DATA_SUCCESS, payload: res.data})
-        setStatus(res.data);
-      })
-      .catch(err => console.log(err.response));
+  handleSubmit (payload, {props, dispatch,  setStatus })  {
+    console.log("props", props)
+    props.postData(payload);
+    // setStatus(props.postData)
+    setStatus(postData(props.dispatch));
   }
 })(SmurfForm);
 
+const mapStateToProps = state => {
+  return { 
+  smurfs: state.smurfs
+ } 
+}
+
+
+
+
+
+// handleSubmit (values, dispatch, { setStatus })  {
+//   dispatch({type: POST_SMURF_DATA_START })
+// //  console.log("d",dispatch)
+// //  console.log("values",values)
+// //  console.log("status",setStatus)   
+// axios
+//     .post('http://localhost:3333/smurfs', values)
+//     .then(res => {
+//         console.log("Post Smurfs", res.data)
+//         // dispatch({type: POST_SMURF_DATA_SUCCESS, payload: res.data})
+//       setStatus(res.data);
+//     })
+//     .catch(err => console.log(err.response));
+// }
+// })(SmurfForm);
 // handleSubmit(values, {props, setSubmitting}) {
 //     setSubmittingHigher = setSubmitting;
 
@@ -109,5 +129,5 @@ const FormikSmurfForm = withFormik({
 
 
 
-export default FormikSmurfForm;
+export default connect(mapStateToProps, {postData})(FormikSmurfForm);
 

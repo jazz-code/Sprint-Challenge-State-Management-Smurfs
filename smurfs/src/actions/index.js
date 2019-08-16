@@ -6,7 +6,7 @@ export {
   } from './smurfActions';
 
   export {
-    //   handleSubmit,
+    postData,
   POST_SMURF_DATA_START,
     POST_SMURF_DATA_SUCCESS
-  } from "../components/SmurfForm"
+  } from "./smurfActions"
